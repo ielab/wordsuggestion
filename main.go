@@ -11,10 +11,12 @@ type WordSuggestionPlugin struct {
 }
 
 func (WordSuggestionPlugin) Serve(s searchrefiner.Server, c *gin.Context) {
+	rawQuery := c.PostForm("query")
+	lang := c.PostForm("lang")
 	c.Render(http.StatusOK, searchrefiner.RenderPlugin(searchrefiner.TemplatePlugin("plugin/wordsuggestion/index.html"), struct {
 		searchrefiner.Query
 		View string
-	}{searchrefiner.Query{QueryString: "", Language: ""}, c.Query("view")}))
+	}{searchrefiner.Query{QueryString: rawQuery, Language: lang}, c.Query("view")}))
 	return
 }
 
