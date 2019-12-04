@@ -1,10 +1,184 @@
 <!DOCTYPE html>
+<!--suppress ALL -->
 <html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8">
-    <title>searchrefiner - QueryVis</title>
-</head>
+    <title>searchrefiner - WordSuggestion</title>
+    <link rel="icon" href="/static/favicon.png" type="image/x-png">
+    <link rel="stylesheet" href="/static/spectre.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/spectre-icons.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/spectre-exp.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/vis.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/vue-multiselect.min.css" type="text/css">
+    <link rel="stylesheet" href="/static/logtail.css" type="text/css">
+    <link rel="stylesheet" href="/static/searchrefiner.css" type="text/css">
+    <script src="/static/vue.js" type="text/javascript"></script>
+    <script src="/static/vue.js" type="text/javascript"></script>
+    <script src="/static/vue-infinite-scroll.js" type="text/javascript"></script>
+    <script src="/static/lodash.min.js" type="text/javascript"></script>
+    <script src="/static/Sortable.min.js"></script>
+    <script src="/static/vuedraggable.min.js"></script>
+    <style>
+        .text-sm {
+            line-height: 0.9rem;
+        }
 
+        .span-sm,
+        .a-sm {
+            font-size: 10px;
+            line-height: 0.0rem;
+        }
+
+        .author-sm {
+            line-height: 0.0rem;
+            font-size: 12px;
+            margin: 0 0 0 0;
+            padding: 0;
+            text-align: left;
+        }
+
+        .author-sm:after {
+            content: ",";
+            margin-right: 6px;
+        }
+
+        .a-sm:after {
+            content: ';';
+            margin-right: 6px;
+        }
+
+        .author-sm:last-child:after,
+        .a-sm:last-child:after {
+            content: none;
+        }
+    </style>
+</head>
 <body>
-    <h1>Hello World</h1>
+    <div class="container" id="app">
+        <header class="navbar bg-secondary nav-height">
+            <section class="navbar-section"><a href="/"><i class="icon icon-arrow-left"></i>back</a></section>
+        </header>
+        <div class="divider"></div>
+        <h2>Word Suggestion</h2>
+        <div class="divider"></div>
+        <div class="panel-body container" style="overflow:hidden;">
+            <div style="text-align: center;">
+                <input class="panel-body" placeholder="Please input the term..." style="overflow:hidden;width:80%" v-model="word" id="termInputBox">
+                <input class="panel-body" type="number" placeholder="Please input the return size..." style="overflow:hidden;width:80%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms">        
+            </div>
+            <div class="divider"></div>
+            <a href="#" v-on:click="reset()">Clear All</a>
+            <div class="panel-footer">
+                <button class="btn btn-primary" id="btn-update-tree" v-on:click="loadTerms()">
+                    <i class="icon icon-forward"></i> Search
+                </button>
+                <div class="divider"></div>
+                <p v-if="!init">Use the search box above to input your term. Click the back link in the top left corner of the interface to return to the main page.</p>
+                <div v-if="busy && !ready" class="loading loading-lg"></div>
+                <div class="text-left text-sm text-gray">
+                    <span class="span-sm" v-if="init" style="font-size:100%"> Total of <strong>[[ wordsFromES.length ]]</strong> results found (<strong>[[ timeSpend ]]</strong> seconds)</span>
+                </div>
+                <ol>
+                    <li v-if="init" v-for="item in wordsFromES" class="pb-2">
+                        <span>[[ item.term ]]</span></br>
+                        <div class="text-left text-sm">
+                            <span><strong>Score:</strong> [[ item.score ]] </span>
+                        </div>
+                    </li>
+                </ol>
+                <!--Thanks to https://vuejsexamples.com/pagination-in-vuejs-simple-way/-->
+                <!--<ul class="pagination" v-if="init">
+                    <li class="page-item">
+                        <button v-if="ids.length != 0" type="button" class="btn btn-primary" v-on:click="resetDiv('p')"> Previous </button>
+                    </li>
+                    <li class="page-item">
+                        <button type="button" v-if="page <= totalPages" class="btn btn-primary"> <input v-bind:value="page" style="width:30%;height:100%;text-align:center" v-model="uDefPage" v-on:keyup="jumpPage" /> / [[ totalPages ]] </button>
+                    </li>
+                    <li class="page-item">
+                        <button v-if="ids.length != 0" type="button" v-on:click="resetDiv('n')" class="btn btn-primary"> Next </button>
+                    </li>
+                </ul>
+                <div v-if="meshInit && totalPages > 0">
+                    Number of MeSH Terms Per Page:
+                    <input type="number" class="panel-body" v-show="tabState==='mesh'" style="overflow:hidden;width:5%" v-model="userDefPerPage" v-on:keyup="changeNumOfTermsPerPage">
+                    <button class="btn btn-primary" id="btn-update-tree" v-on:click="changeNumOfTermsPerPage()">
+                        Change
+                    </button>
+                </div>-->
+            </div>
+        </div>
+    </div>
+    <script>
+        var vm = new Vue({
+            delimiters: ["[[", "]]"],
+            el: "#app",
+            data: {
+                word: "",
+                size: "",
+                pool: "",
+
+                wordsFromES: [{"term":"", "score":0.0}],
+                wordsFromCUI: [{"term":"", "score":0.0}],
+                busy: false,
+                init: false,
+                ready: false,
+
+                searchStart: 0,
+                searchEnd: 0,
+                timeSpend: 0
+            },
+            computed: {
+
+            },
+            methods: {
+                loadTerms: function (e) {
+                    if ((e != undefined && e.keyCode === 13) || e === undefined) {
+                        let self = this;
+                        self.busy = true;
+                        self.ready = false;
+                        self.init = false;
+                        self.wordsFromES = [{"term":"", "score":0.0}];
+                        self.wordsFromCUI = [{"term":"", "score":0.0}];
+                        self.searchStart = new Date().getTime();
+                        if (self.size === "") {
+                            self.size = "5";
+                        }
+                        if (self.pool === "") {
+                            self.pool = "5"
+                        }
+                        let request = new XMLHttpRequest();
+                        request.addEventListener("load", function(ev) {
+                            let esWords = [];
+                            let cuiWords = [];
+                            if (ev.currentTarget.status == 200) {
+                                var doc = ev.currentTarget.responseText;
+                                var jsonDoc = JSON.parse(doc);
+                                esWords = jsonDoc["ES"]
+                                cuiWords = jsonDoc["CUI"]
+                            } else {
+                                esWords = []
+                                cuiWords = []
+                            }
+                            self.wordsFromES = esWords;
+                            self.wordsFromCUI = cuiWords;
+                            self.searchEnd = new Date().getTime();
+                            self.timeSpend = (self.searchEnd - self.searchStart)/1000;
+                            self.init = true;
+                            self.ready = true;
+                            self.busy = false;
+                        });
+                        request.open("GET", "http://localhost:6688/search?" + "retSize=" + self.size + "&pool=" + self.pool + "&term=" + self.word);
+                        request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                        request.send(null);
+                    }
+                }
+            },
+            beforeMount: function() {
+
+            },
+            watch: {
+
+            }
+        })
+    </script>
 </body>
+</html>
