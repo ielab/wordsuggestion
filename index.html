@@ -22,48 +22,35 @@
             line-height: 0.9rem;
         }
 
-        .span-sm,
-        .a-sm {
+        .span-sm {
             font-size: 10px;
             line-height: 0.0rem;
         }
 
-        .author-sm {
-            line-height: 0.0rem;
-            font-size: 12px;
-            margin: 0 0 0 0;
-            padding: 0;
-            text-align: left;
-        }
-
-        .author-sm:after {
-            content: ",";
-            margin-right: 6px;
-        }
-
-        .a-sm:after {
-            content: ';';
-            margin-right: 6px;
-        }
-
-        .author-sm:last-child:after,
-        .a-sm:last-child:after {
-            content: none;
+        .span-rg {
+            font-size: 13px;
+            line-height: 0.1rem;
         }
     </style>
 </head>
 <body>
-    <div class="container" id="app">
+    <div class="container p-2" id="app">
         <header class="navbar bg-secondary nav-height">
             <section class="navbar-section"><a href="/"><i class="icon icon-arrow-left"></i>back</a></section>
         </header>
         <div class="divider"></div>
-        <h2>Word Suggestion</h2>
-        <div class="divider"></div>
-        <div class="panel-body container" style="overflow:hidden;">
-            <div style="text-align: center;">
-                <input class="panel-body" placeholder="Please input the term..." style="overflow:hidden;width:80%" v-model="word" id="termInputBox">
-                <input class="panel-body" type="number" placeholder="Please input the return size..." style="overflow:hidden;width:80%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms">        
+        <div class="panel p-2" style="overflow:hidden;">
+            <h2>Word Suggestion</h2>
+            <div class="divider"></div>
+            <div class="panel-body container">
+                <ul style="list-style-type: none;">
+                    <li><span class="span-rg"><strong>Term: </strong>(Required)</span></li>
+                    <li><input class="panel-body" style="overflow:hidden;width:40%" v-model="word" id="termInputBox" v-on:keyup="loadTerms"></li>
+                    <li><span class="span-rg"><strong>Return size:</strong> (Optional, Default 5)</span></li>
+                    <li><input class="panel-body" type="number" style="overflow:hidden;width:40%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
+                    <li><span class="span-rg"><strong>Number of docs for search in ES index:</strong> (Optional, Default 5)</span></li>
+                    <li><input class="panel-body" type="number" style="overflow:hidden;width:40%" v-model="pool" id="poolInputBox" v-on:keyup="loadTerms"></li>
+                </ul>
             </div>
             <div class="divider"></div>
             <a href="#" v-on:click="reset()">Clear All</a>
@@ -75,35 +62,35 @@
                 <p v-if="!init">Use the search box above to input your term. Click the back link in the top left corner of the interface to return to the main page.</p>
                 <div v-if="busy && !ready" class="loading loading-lg"></div>
                 <div class="text-left text-sm text-gray">
-                    <span class="span-sm" v-if="init" style="font-size:100%"> Total of <strong>[[ wordsFromES.length ]]</strong> results found (<strong>[[ timeSpend ]]</strong> seconds)</span>
+                    <span class="span-sm" v-if="init" style="font-size:100%"><strong>[[ wordsFromES.length ]]</strong> terms from Elastic Search Index</span></br>
+                    <span class="span-sm" v-if="init" style="font-size:100%"><strong>[[ wordsFromCUI.length ]]</strong> terms from CUI2Vec</span></br>
+                    <span class="span-sm" v-if="init" style="font-size:100%"><strong>In [[ timeSpend ]]</strong> seconds</span>
                 </div>
-                <ol>
-                    <li v-if="init" v-for="item in wordsFromES" class="pb-2">
-                        <span>[[ item.term ]]</span></br>
-                        <div class="text-left text-sm">
-                            <span><strong>Score:</strong> [[ item.score ]] </span>
-                        </div>
-                    </li>
-                </ol>
-                <!--Thanks to https://vuejsexamples.com/pagination-in-vuejs-simple-way/-->
-                <!--<ul class="pagination" v-if="init">
-                    <li class="page-item">
-                        <button v-if="ids.length != 0" type="button" class="btn btn-primary" v-on:click="resetDiv('p')"> Previous </button>
-                    </li>
-                    <li class="page-item">
-                        <button type="button" v-if="page <= totalPages" class="btn btn-primary"> <input v-bind:value="page" style="width:30%;height:100%;text-align:center" v-model="uDefPage" v-on:keyup="jumpPage" /> / [[ totalPages ]] </button>
-                    </li>
-                    <li class="page-item">
-                        <button v-if="ids.length != 0" type="button" v-on:click="resetDiv('n')" class="btn btn-primary"> Next </button>
-                    </li>
-                </ul>
-                <div v-if="meshInit && totalPages > 0">
-                    Number of MeSH Terms Per Page:
-                    <input type="number" class="panel-body" v-show="tabState==='mesh'" style="overflow:hidden;width:5%" v-model="userDefPerPage" v-on:keyup="changeNumOfTermsPerPage">
-                    <button class="btn btn-primary" id="btn-update-tree" v-on:click="changeNumOfTermsPerPage()">
-                        Change
-                    </button>
-                </div>-->
+                <div class="divider"></div>
+                <div v-if="init" style="width: 49%; float: left; margin-right: 1%; border: slateblue 1px solid;"></br>
+                    <div style="text-align: center;"><h5>Terms From Elastic Search Index</h5></div>
+                    <div class="divider"></div>
+                    <ol>
+                        <li v-if="init" v-for="item in wordsFromES" class="pb-2">
+                            <span><strong>Term: </strong>[[ item.term ]]</span></br>
+                            <div class="text-left text-sm">
+                                <span><strong>Score:</strong> [[ item.score ]] </span>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+                <div v-if="init" style="width: 49%; float: left; margin-left: 1%; border: slateblue 1px solid;"></br>
+                    <div style="text-align: center;"><h5>Terms From CUI2Vec</h5></div>
+                    <div class="divider"></div>
+                    <ol>
+                        <li v-if="init" v-for="item in wordsFromCUI" class="pb-2">
+                            <span><strong>Term: </strong>[[ item.term ]]</span></br>
+                            <div class="text-left text-sm">
+                                <span><strong>Score:</strong> [[ item.score ]] </span>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
             </div>
         </div>
     </div>
@@ -130,6 +117,20 @@
 
             },
             methods: {
+                reset: function () {
+                    let self = this;
+                    self.word = "";
+                    self.size = "";
+                    self.pool = "";
+                    self.wordsFromCUI = [{"term":"", "score":0.0}];
+                    self.wordsFromES = [{"term":"", "score":0.0}];
+                    self.busy = false;
+                    self.init = false;
+                    self.ready = false;
+                    self.searchStart = 0;
+                    self.searchEnd = 0;
+                    self.timeSpend = 0;
+                },
                 loadTerms: function (e) {
                     if ((e != undefined && e.keyCode === 13) || e === undefined) {
                         let self = this;
@@ -144,6 +145,11 @@
                         }
                         if (self.pool === "") {
                             self.pool = "5"
+                        }
+                        if (self.word === "") {
+                            window.alert("Term is required for search.")
+                            self.reset()
+                            return
                         }
                         let request = new XMLHttpRequest();
                         request.addEventListener("load", function(ev) {
