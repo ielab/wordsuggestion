@@ -47,9 +47,9 @@
                     <li><span class="span-rg"><strong>Term: </strong>(Required)</span></li>
                     <li><input class="panel-body" style="overflow:hidden;width:40%" v-model="word" id="termInputBox" v-on:keyup="loadTerms"></li>
                     <li><span class="span-rg"><strong>Return size:</strong> (Optional, Default 5)</span></li>
-                    <li><input class="panel-body" min="1" max="20" type="number" style="overflow:hidden;width:40%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
+                    <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
                     <li><span class="span-rg"><strong>Number of docs for search in ES index:</strong> (Optional, Default 5)</span></li>
-                    <li><input class="panel-body" min="1" max="10000" type="number" style="overflow:hidden;width:40%" v-model="pool" id="poolInputBox" v-on:keyup="loadTerms"></li>
+                    <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%" v-model="pool" id="poolInputBox" v-on:keyup="loadTerms"></li>
                 </ul>
             </div>
             <div class="divider"></div>
@@ -64,7 +64,7 @@
                 <div class="text-left text-sm text-gray">
                     <span class="span-sm" v-if="init" style="font-size:100%"><strong>[[ wordsFromES.length ]]</strong> terms from Elastic Search Index</span></br>
                     <span class="span-sm" v-if="init" style="font-size:100%"><strong>[[ wordsFromCUI.length ]]</strong> terms from CUI2Vec</span></br>
-                    <span class="span-sm" v-if="init" style="font-size:100%"><strong>In [[ timeSpend ]]</strong> seconds</span>
+                    <span class="span-sm" v-if="init" style="font-size:100%">In <strong>[[ timeSpend ]]</strong> seconds</span>
                 </div>
                 <div class="divider"></div>
                 <div v-if="init" style="width: 49%; float: left; margin-right: 1%; border: slateblue 1px solid;"></br>
@@ -74,7 +74,7 @@
                         <li v-if="init" v-for="item in wordsFromES" class="pb-2">
                             <span><strong>Term: </strong>[[ item.term ]]</span></br>
                             <div class="text-left text-sm">
-                                <span><strong>Score:</strong> [[ item.score ]] </span>
+                                <span class="span-sm"><strong>PMI Score:</strong> [[ item.score ]] </span>
                             </div>
                         </li>
                     </ol>
@@ -86,7 +86,7 @@
                         <li v-if="init" v-for="item in wordsFromCUI" class="pb-2">
                             <span><strong>Term: </strong>[[ item.term ]]</span></br>
                             <div class="text-left text-sm">
-                                <span><strong>Score:</strong> [[ item.score ]] </span>
+                                <span class="span-sm"><strong>Consine Similarity Score:</strong> [[ item.score ]] </span>
                             </div>
                         </li>
                     </ol>
@@ -112,9 +112,6 @@
                 searchStart: 0,
                 searchEnd: 0,
                 timeSpend: 0
-            },
-            computed: {
-
             },
             methods: {
                 reset: function () {
@@ -177,12 +174,6 @@
                         request.send(null);
                     }
                 }
-            },
-            beforeMount: function() {
-
-            },
-            watch: {
-
             }
         })
     </script>
