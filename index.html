@@ -130,6 +130,8 @@
                 },
                 loadTerms: function (e) {
                     if ((e != undefined && e.keyCode === 13) || e === undefined) {
+                        var el = document.getElementById("btn-update-tree");
+                        el.classList.add("loading")
                         let self = this;
                         self.busy = true;
                         self.ready = false;
@@ -150,6 +152,7 @@
                         }
                         let request = new XMLHttpRequest();
                         request.addEventListener("load", function(ev) {
+                            el.classList.remove("loading");
                             let esWords = [];
                             let cuiWords = [];
                             if (ev.currentTarget.status == 200) {

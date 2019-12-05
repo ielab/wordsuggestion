@@ -26,7 +26,7 @@ func (WordSuggestionPlugin) PermissionType() searchrefiner.PluginPermission {
 
 func (WordSuggestionPlugin) Details() searchrefiner.PluginDetails {
 	return searchrefiner.PluginDetails{
-		Title:       "WordSuggestions",
+		Title:       "Word Suggestions",
 		Description: "Give alternative word suggestions based on the input word.",
 		Author:      "ielab",
 		Version:     "3.Dec.2019",
