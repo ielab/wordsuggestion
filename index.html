@@ -47,9 +47,9 @@
                     <li><span class="span-rg"><strong>Term: </strong>(Required)</span></li>
                     <li><input class="panel-body" style="overflow:hidden;width:40%" v-model="word" id="termInputBox" v-on:keyup="loadTerms"></li>
                     <li><span class="span-rg"><strong>Return size:</strong> (Optional, Default 5)</span></li>
-                    <li><input class="panel-body" type="number" style="overflow:hidden;width:40%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
+                    <li><input class="panel-body" min="1" max="20" type="number" style="overflow:hidden;width:40%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
                     <li><span class="span-rg"><strong>Number of docs for search in ES index:</strong> (Optional, Default 5)</span></li>
-                    <li><input class="panel-body" type="number" style="overflow:hidden;width:40%" v-model="pool" id="poolInputBox" v-on:keyup="loadTerms"></li>
+                    <li><input class="panel-body" min="1" max="10000" type="number" style="overflow:hidden;width:40%" v-model="pool" id="poolInputBox" v-on:keyup="loadTerms"></li>
                 </ul>
             </div>
             <div class="divider"></div>
