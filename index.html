@@ -72,7 +72,7 @@
                     <div class="divider"></div>
                     <ol>
                         <li v-if="init" v-for="item in wordsFromES" class="pb-2">
-                            <span><strong>Term: </strong>[[ item.term ]]</span></br>
+                            <span> [[ item.term ]]</span></br>
                             <div class="text-left text-sm">
                                 <span class="span-sm"><strong>PMI Score:</strong> [[ item.score ]] </span>
                             </div>
@@ -84,7 +84,7 @@
                     <div class="divider"></div>
                     <ol>
                         <li v-if="init" v-for="item in wordsFromCUI" class="pb-2">
-                            <span><strong>Term: </strong>[[ item.term ]]</span></br>
+                            <span> [[ item.term ]]</span></br>
                             <div class="text-left text-sm">
                                 <span class="span-sm"><strong>Consine Similarity Score:</strong> [[ item.score ]] </span>
                             </div>
@@ -100,8 +100,8 @@
             el: "#app",
             data: {
                 word: "",
-                size: "",
-                pool: "",
+                size: null,
+                pool: null,
 
                 wordsFromES: [{"term":"", "score":0.0}],
                 wordsFromCUI: [{"term":"", "score":0.0}],
@@ -117,8 +117,8 @@
                 reset: function () {
                     let self = this;
                     self.word = "";
-                    self.size = "";
-                    self.pool = "";
+                    self.size = null;
+                    self.pool = null;
                     self.wordsFromCUI = [{"term":"", "score":0.0}];
                     self.wordsFromES = [{"term":"", "score":0.0}];
                     self.busy = false;
@@ -139,11 +139,11 @@
                         self.wordsFromES = [{"term":"", "score":0.0}];
                         self.wordsFromCUI = [{"term":"", "score":0.0}];
                         self.searchStart = new Date().getTime();
-                        if (self.size === "") {
-                            self.size = "5";
+                        if (self.size === null) {
+                            self.size = 5;
                         }
-                        if (self.pool === "") {
-                            self.pool = "5"
+                        if (self.pool === null) {
+                            self.pool = 5
                         }
                         if (self.word === "") {
                             window.alert("Term is required for search.")
