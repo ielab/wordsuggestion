@@ -62,31 +62,18 @@
                 <p v-if="!init">Use the search box above to input your term. Click the back link in the top left corner of the interface to return to the main page.</p>
                 <div v-if="busy && !ready" class="loading loading-lg"></div>
                 <div class="text-left text-sm text-gray">
-                    <span class="span-sm" v-if="init" style="font-size:100%"><strong>[[ wordsFromES.length ]]</strong> terms from Elastic Search Index</span></br>
-                    <span class="span-sm" v-if="init" style="font-size:100%"><strong>[[ wordsFromCUI.length ]]</strong> terms from CUI2Vec</span></br>
+                    <span class="span-sm" v-if="init" style="font-size:100%"><strong>[[ wordSuggestions.length ]]</strong> Alternatives Found</span></br>
                     <span class="span-sm" v-if="init" style="font-size:100%">In <strong>[[ timeSpend ]]</strong> seconds</span>
                 </div>
                 <div class="divider"></div>
-                <div v-if="init" style="width: 49%; float: left; margin-right: 1%; border: slateblue 1px solid;"></br>
-                    <div style="text-align: center;"><h5>Terms From Elastic Search Index</h5></div>
+                <div v-if="init" style="width: 100%; float: left; border: slateblue 1px solid;"></br>
+                    <div style="text-align: center;"><h5>Alternative Words Found</h5></div>
                     <div class="divider"></div>
-                    <ol>
-                        <li v-if="init" v-for="item in wordsFromES" class="pb-2">
+                    <ol style="column-count: 3; -webkit-column-count: 3; -moz-column-count: 3;">
+                        <li v-if="init" v-for="item in wordSuggestions" class="pb-2">
                             <span> [[ item.term ]]</span></br>
                             <div class="text-left text-sm">
-                                <span class="span-sm"><strong>PMI Score:</strong> [[ item.score ]] </span>
-                            </div>
-                        </li>
-                    </ol>
-                </div>
-                <div v-if="init" style="width: 49%; float: left; margin-left: 1%; border: slateblue 1px solid;"></br>
-                    <div style="text-align: center;"><h5>Terms From CUI2Vec</h5></div>
-                    <div class="divider"></div>
-                    <ol>
-                        <li v-if="init" v-for="item in wordsFromCUI" class="pb-2">
-                            <span> [[ item.term ]]</span></br>
-                            <div class="text-left text-sm">
-                                <span class="span-sm"><strong>Consine Similarity Score:</strong> [[ item.score ]] </span>
+                                <span class="span-sm"><strong>Score:</strong> [[ item.score ]] </span>
                             </div>
                         </li>
                     </ol>
@@ -103,8 +90,7 @@
                 size: null,
                 pool: null,
 
-                wordsFromES: [{"term":"", "score":0.0}],
-                wordsFromCUI: [{"term":"", "score":0.0}],
+                wordSuggestions: [{"term":"", "score":0.0}],
                 busy: false,
                 init: false,
                 ready: false,
@@ -119,8 +105,7 @@
                     self.word = "";
                     self.size = null;
                     self.pool = null;
-                    self.wordsFromCUI = [{"term":"", "score":0.0}];
-                    self.wordsFromES = [{"term":"", "score":0.0}];
+                    self.wordSuggestions = [{"term":"", "score":0.0}];
                     self.busy = false;
                     self.init = false;
                     self.ready = false;
@@ -136,8 +121,7 @@
                         self.busy = true;
                         self.ready = false;
                         self.init = false;
-                        self.wordsFromES = [{"term":"", "score":0.0}];
-                        self.wordsFromCUI = [{"term":"", "score":0.0}];
+                        self.wordSuggestions = [{"term":"", "score":0.0}];
                         self.searchStart = new Date().getTime();
                         if (self.size === null) {
                             self.size = 5;
@@ -153,19 +137,14 @@
                         let request = new XMLHttpRequest();
                         request.addEventListener("load", function(ev) {
                             el.classList.remove("loading");
-                            let esWords = [];
-                            let cuiWords = [];
+                            let wordSuggestions = [];
                             if (ev.currentTarget.status == 200) {
                                 var doc = ev.currentTarget.responseText;
-                                var jsonDoc = JSON.parse(doc);
-                                esWords = jsonDoc["ES"]
-                                cuiWords = jsonDoc["CUI"]
+                                wordSuggestions = JSON.parse(doc);
                             } else {
-                                esWords = []
-                                cuiWords = []
+                                wordSuggestions = [];
                             }
-                            self.wordsFromES = esWords;
-                            self.wordsFromCUI = cuiWords;
+                            self.wordSuggestions = wordSuggestions;
                             self.searchEnd = new Date().getTime();
                             self.timeSpend = (self.searchEnd - self.searchStart)/1000;
                             self.init = true;
