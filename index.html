@@ -50,6 +50,10 @@
                     <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
                     <li><span class="span-rg"><strong>Number of docs for search in ES index:</strong> (Optional, Default 5)</span></li>
                     <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%" v-model="pool" id="poolInputBox" v-on:keyup="loadTerms"></li>
+                    <li><input type="checkbox" value="merged" id="merge"> <span class="span-rg">Merge Results (Optional, Default Is Merged)</span></li>
+                    <li><span class="span-rg"><strong>Data Sources: (Optional, Default Using Both)</strong></span></li>
+                    <li><input type="checkbox" value="cui" id="cui"> <span class="span-rg">CUI2Vec</span></li>
+                    <li><input type="checkbox" value="es" id="es"> <span class="span-rg">Elastic Search Index</span></li>
                 </ul>
             </div>
             <div class="divider"></div>
@@ -62,15 +66,43 @@
                 <p v-if="!init">Use the search box above to input your term. Click the back link in the top left corner of the interface to return to the main page.</p>
                 <div v-if="busy && !ready" class="loading loading-lg"></div>
                 <div class="text-left text-sm text-gray">
-                    <span class="span-sm" v-if="init" style="font-size:100%"><strong>[[ wordSuggestions.length ]]</strong> Alternatives Found</span></br>
+                    <span class="span-sm" v-if="init && merged" style="font-size:100%"><strong>[[ wordSuggestions.length ]]</strong> Alternatives Found</span></br>
+                    <span class="span-sm" v-if="init && !merged" style="font-size:100%"><strong>[[ wordsFromES.length + wordsFromCUI.length ]]</strong> Alternatives Found</span></br>
                     <span class="span-sm" v-if="init" style="font-size:100%">In <strong>[[ timeSpend ]]</strong> seconds</span>
                 </div>
                 <div class="divider"></div>
-                <div v-if="init" style="width: 100%; float: left; border: slateblue 1px solid;"></br>
+                <div v-if="init && merged" style="width: 100%; float: left; border: slateblue 1px solid;"></br>
                     <div style="text-align: center;"><h5>Alternative Words Found</h5></div>
                     <div class="divider"></div>
-                    <ol style="column-count: 3; -webkit-column-count: 3; -moz-column-count: 3;">
-                        <li v-if="init" v-for="item in wordSuggestions" class="pb-2">
+                    <ol>
+                        <li v-if="init && merged" v-for="item in wordSuggestions" class="pb-2">
+                            <span> [[ item.term ]]</span></br>
+                            <div class="text-left text-sm">
+                                <span class="span-sm"><strong>Score:</strong> [[ item.score ]] </span>
+                            </div>
+                            <div class="text-left text-sm">
+                                <span class="span-sm"><strong>Source:</strong> [[ item.source ]] </span>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+                <div v-if="init && !merged" style="width: 49%; margin-left: 1%; float: left; border: slateblue 1px solid;"></br>
+                    <div style="text-align: center;"><h5>Words From CUI</h5></div>
+                    <div class="divider"></div>
+                    <ol>
+                        <li v-if="init" v-for="item in wordsFromCUI" class="pb-2">
+                            <span> [[ item.term ]]</span></br>
+                            <div class="text-left text-sm">
+                                <span class="span-sm"><strong>Score:</strong> [[ item.score ]] </span>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+                <div v-if="init && !merged" style="width: 49%; margin-left: 1%; float: left; border: slateblue 1px solid;"></br>
+                    <div style="text-align: center;"><h5>Words From ES</h5></div>
+                    <div class="divider"></div>
+                    <ol>
+                        <li v-if="init" v-for="item in wordsFromES" class="pb-2">
                             <span> [[ item.term ]]</span></br>
                             <div class="text-left text-sm">
                                 <span class="span-sm"><strong>Score:</strong> [[ item.score ]] </span>
@@ -89,8 +121,12 @@
                 word: "",
                 size: null,
                 pool: null,
+                merged: true,
+                sources: null,
 
-                wordSuggestions: [{"term":"", "score":0.0}],
+                wordSuggestions: [],
+                wordsFromES: [],
+                wordsFromCUI: [],
                 busy: false,
                 init: false,
                 ready: false,
@@ -105,7 +141,7 @@
                     self.word = "";
                     self.size = null;
                     self.pool = null;
-                    self.wordSuggestions = [{"term":"", "score":0.0}];
+                    self.wordSuggestions = [];
                     self.busy = false;
                     self.init = false;
                     self.ready = false;
@@ -114,20 +150,31 @@
                     self.timeSpend = 0;
                 },
                 loadTerms: function (e) {
+                    let self = this;
                     if ((e != undefined && e.keyCode === 13) || e === undefined) {
                         var el = document.getElementById("btn-update-tree");
                         el.classList.add("loading")
-                        let self = this;
+                        ds = []
+                        document.getElementById("merge").checked ? self.merged = true : self.merged = false;
+                        document.getElementById("cui").checked ? ds.push("cui") : ds = ds;
+                        document.getElementById("es").checked ? ds.push("es") : ds = ds;
+                        if (ds.length === 0) {
+                            self.sources = "cui,es";
+                        } else {
+                            self.sources = ds.join(",");
+                        }
                         self.busy = true;
                         self.ready = false;
                         self.init = false;
-                        self.wordSuggestions = [{"term":"", "score":0.0}];
+                        self.wordSuggestions = [];
+                        self.wordsFromCUI = [];
+                        self.wordsFromES = [];
                         self.searchStart = new Date().getTime();
                         if (self.size === null) {
-                            self.size = 5;
+                            self.size = 10;
                         }
                         if (self.pool === null) {
-                            self.pool = 5
+                            self.pool = 20;
                         }
                         if (self.word === "") {
                             window.alert("Term is required for search.")
@@ -140,18 +187,30 @@
                             let wordSuggestions = [];
                             if (ev.currentTarget.status == 200) {
                                 var doc = ev.currentTarget.responseText;
-                                wordSuggestions = JSON.parse(doc);
+                                resp = JSON.parse(doc);
+                                if (resp.hasOwnProperty("ES") || resp.hasOwnProperty("CUI")) {
+                                    wordsFromES = resp["ES"];
+                                    wordsFromCUI = resp["CUI"];
+                                } else {
+                                    wordSuggestions = resp;
+                                    wordsFromCUI = [];
+                                    wordsFromES = [];
+                                }
                             } else {
                                 wordSuggestions = [];
+                                wordsFromCUI = [];
+                                wordsFromES = [];
                             }
                             self.wordSuggestions = wordSuggestions;
+                            self.wordsFromCUI = wordsFromCUI;
+                            self.wordsFromES = wordsFromES;
                             self.searchEnd = new Date().getTime();
                             self.timeSpend = (self.searchEnd - self.searchStart)/1000;
                             self.init = true;
                             self.ready = true;
                             self.busy = false;
                         });
-                        request.open("GET", "http://localhost:6688/search?" + "retSize=" + self.size + "&pool=" + self.pool + "&term=" + self.word);
+                        request.open("GET", "http://localhost:6688/search?" + "retSize=" + self.size + "&pool=" + self.pool + "&sources=" + self.sources + "&merged=" + self.merged + "&term=" + self.word);
                         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                         request.send(null);
                     }
