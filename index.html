@@ -208,7 +208,6 @@
                             if (ev.currentTarget.status == 200) {
                                 var doc = ev.currentTarget.responseText;
                                 resp = JSON.parse(doc);
-                                console.log(resp)
                                 if (resp.hasOwnProperty("ES") || resp.hasOwnProperty("CUI")) {
                                     if (resp["CUI"] != undefined) {
                                         wordsFromCUI = resp["CUI"];
