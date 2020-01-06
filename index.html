@@ -49,16 +49,16 @@
                     <li><span class="span-rg"><strong>Term: </strong>(Required)</span></li>
                     <li><input class="panel-body" style="overflow:hidden;width:40%" v-model="word" id="termInputBox"
                             v-on:keyup="loadTerms"></li>
-                    <li><span class="span-rg"><strong>Return size:</strong> (Optional, Default 5)</span></li>
+                    <li><span class="span-rg"><strong>Return size:</strong> (Optional, Default [[default_retSize]], Max [[max_retSize]])</span></li>
                     <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%;"
                             v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
                     <li><span class="span-rg"><strong>Number of docs for search in ES index:</strong> (Optional, Default
-                            5)</span></li>
+                            [[default_pool]], Max [[max_pool]])</span></li>
                     <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%" v-model="pool"
                             id="poolInputBox" v-on:keyup="loadTerms"></li>
                     <li><input type="checkbox" value="merged" id="merge"> <span class="span-rg">Merge Results (Optional,
-                            Default Is Merged)</span></li>
-                    <li><span class="span-rg"><strong>Data Sources: (Optional, Default Using Both)</strong></span></li>
+                            Default Is [[merged]])</span></li>
+                    <li><span class="span-rg"><strong>Data Sources: (Optional, Default Using [[sources]])</strong></span></li>
                     <li><input type="checkbox" value="cui" id="cui"> <span class="span-rg">CUI2Vec</span></li>
                     <li><input type="checkbox" value="es" id="es"> <span class="span-rg">Elastic Search Index</span>
                     </li>
@@ -153,9 +153,49 @@
 
                 searchStart: 0,
                 searchEnd: 0,
-                timeSpend: 0
+                timeSpend: 0,
+
+                max_pool: null,
+                max_retSize: null,
+                default_pool: null,
+                default_retSize: null,
+                merged: null,
+                sources: null,
             },
             methods: {
+                getSettings: function () {
+                    let self = this;
+                    let request = new XMLHttpRequest();
+                    request.addEventListener("load", function (ev) {
+                        if (ev.currentTarget.status == 200) {
+                            var settingsStr = ev.currentTarget.responseText;
+                            var settings = JSON.parse(settingsStr);
+                            self.default_pool = settings["default_pool"];
+                            self.default_retSize = settings["default_retSize"];
+                            self.max_pool = settings["max_pool"];
+                            self.max_retSize = settings["max_retSize"];
+                            var merged = settings["merged"];
+                            if (merged === true) {
+                                self.merged = "Merged";
+                            } else {
+                                self.merged = "Not Merged";
+                            }
+                            var sources = settings["sources"];
+                            var strSources = [];
+                            for (s in sources) {
+                                if (s === "es") {
+                                    strSources.append("Elastic Search Index");
+                                } else if (s === "cui") {
+                                    strSources.append("CUI2Vec");
+                                }
+                            }
+                            self.sources = strSources.toString();
+                        }
+                    });
+                    request.open("GET", "http://localhost:6688/settings");
+                    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    request.send(null);
+                },
                 reset: function () {
                     let self = this;
                     self.word = "";
@@ -246,6 +286,9 @@
                         request.send(null);
                     }
                 }
+            },
+            beforeMount: function () {
+                this.getSettings();
             }
         })
     </script>
