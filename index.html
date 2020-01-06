@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <!--suppress ALL -->
 <html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+
 <head>
     <title>searchrefiner - WordSuggestion</title>
     <link rel="icon" href="/static/favicon.png" type="image/x-png">
@@ -33,6 +34,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container p-2" id="app">
         <header class="navbar bg-secondary nav-height">
@@ -45,15 +47,21 @@
             <div class="panel-body container">
                 <ul style="list-style-type: none;">
                     <li><span class="span-rg"><strong>Term: </strong>(Required)</span></li>
-                    <li><input class="panel-body" style="overflow:hidden;width:40%" v-model="word" id="termInputBox" v-on:keyup="loadTerms"></li>
-                    <li><span class="span-rg"><strong>Return size:</strong> (Optional, Default 5)</span></li>
-                    <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%;" v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
-                    <li><span class="span-rg"><strong>Number of docs for search in ES index:</strong> (Optional, Default 5)</span></li>
-                    <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%" v-model="pool" id="poolInputBox" v-on:keyup="loadTerms"></li>
-                    <li><input type="checkbox" value="merged" id="merge"> <span class="span-rg">Merge Results (Optional, Default Is Merged)</span></li>
-                    <li><span class="span-rg"><strong>Data Sources: (Optional, Default Using Both)</strong></span></li>
+                    <li><input class="panel-body" style="overflow:hidden;width:40%" v-model="word" id="termInputBox"
+                            v-on:keyup="loadTerms"></li>
+                    <li><span class="span-rg"><strong>Return size:</strong> (Optional, Default [[default_retSize]], Max [[max_retSize]])</span></li>
+                    <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%;"
+                            v-model="size" id="sizeInputBox" v-on:keyup="loadTerms"></li>
+                    <li><span class="span-rg"><strong>Number of docs for search in ES index:</strong> (Optional, Default
+                            [[default_pool]], Max [[max_pool]])</span></li>
+                    <li><input class="panel-body" min="1" type="number" style="overflow:hidden;width:40%" v-model="pool"
+                            id="poolInputBox" v-on:keyup="loadTerms"></li>
+                    <li><input type="checkbox" value="merged" id="merge"> <span class="span-rg">Merge Results (Optional,
+                            Default Is [[merged]])</span></li>
+                    <li><span class="span-rg"><strong>Data Sources: (Optional, Default Using [[sources]])</strong></span></li>
                     <li><input type="checkbox" value="cui" id="cui"> <span class="span-rg">CUI2Vec</span></li>
-                    <li><input type="checkbox" value="es" id="es"> <span class="span-rg">Elastic Search Index</span></li>
+                    <li><input type="checkbox" value="es" id="es"> <span class="span-rg">Elastic Search Index</span>
+                    </li>
                 </ul>
             </div>
             <div class="divider"></div>
@@ -63,16 +71,22 @@
                     <i class="icon icon-forward"></i> Search
                 </button>
                 <div class="divider"></div>
-                <p v-if="!init">Use the search box above to input your term. Click the back link in the top left corner of the interface to return to the main page.</p>
+                <p v-if="!init">Use the search box above to input your term. Click the back link in the top left corner
+                    of the interface to return to the main page.</p>
                 <div v-if="busy && !ready" class="loading loading-lg"></div>
                 <div class="text-left text-sm text-gray">
-                    <span class="span-sm" v-if="init && merged" style="font-size:100%"><strong>[[ wordSuggestions.length ]]</strong> Alternatives Found</span></br>
-                    <span class="span-sm" v-if="init && !merged" style="font-size:100%"><strong>[[ wordsFromES.length + wordsFromCUI.length ]]</strong> Alternatives Found</span></br>
-                    <span class="span-sm" v-if="init" style="font-size:100%">In <strong>[[ timeSpend ]]</strong> seconds</span>
+                    <span class="span-sm" v-if="init && merged" style="font-size:100%"><strong>[[ wordSuggestions.length
+                            ]]</strong> Alternatives Found</span></br>
+                    <span class="span-sm" v-if="init && !merged" style="font-size:100%"><strong>[[ wordsFromES.length +
+                            wordsFromCUI.length ]]</strong> Alternatives Found</span></br>
+                    <span class="span-sm" v-if="init" style="font-size:100%">In <strong>[[ timeSpend ]]</strong>
+                        seconds</span>
                 </div>
                 <div class="divider"></div>
                 <div v-if="init && merged" style="width: 100%; float: left; border: slateblue 1px solid;"></br>
-                    <div style="text-align: center;"><h5>Alternative Words Found</h5></div>
+                    <div style="text-align: center;">
+                        <h5>Alternative Words Found</h5>
+                    </div>
                     <div class="divider"></div>
                     <ol>
                         <li v-if="init && merged" v-for="item in wordSuggestions" class="pb-2">
@@ -86,8 +100,11 @@
                         </li>
                     </ol>
                 </div>
-                <div v-if="init && !merged" style="width: 49%; margin-left: 1%; float: left; border: slateblue 1px solid;"></br>
-                    <div style="text-align: center;"><h5>Words From CUI</h5></div>
+                <div v-if="init && !merged && wordsFromCUI.length > 0"
+                    style="width: 49%; margin-left: 1%; float: left; border: slateblue 1px solid;"></br>
+                    <div style="text-align: center;">
+                        <h5>Words From CUI</h5>
+                    </div>
                     <div class="divider"></div>
                     <ol>
                         <li v-if="init" v-for="item in wordsFromCUI" class="pb-2">
@@ -98,8 +115,11 @@
                         </li>
                     </ol>
                 </div>
-                <div v-if="init && !merged" style="width: 49%; margin-left: 1%; float: left; border: slateblue 1px solid;"></br>
-                    <div style="text-align: center;"><h5>Words From ES</h5></div>
+                <div v-if="init && !merged && wordsFromES.length > 0"
+                    style="width: 49%; margin-left: 1%; float: left; border: slateblue 1px solid;"></br>
+                    <div style="text-align: center;">
+                        <h5>Words From ES</h5>
+                    </div>
                     <div class="divider"></div>
                     <ol>
                         <li v-if="init" v-for="item in wordsFromES" class="pb-2">
@@ -133,9 +153,51 @@
 
                 searchStart: 0,
                 searchEnd: 0,
-                timeSpend: 0
+                timeSpend: 0,
+
+                max_pool: null,
+                max_retSize: null,
+                default_pool: null,
+                default_retSize: null,
+                merged: null,
+                sources: null,
             },
             methods: {
+                getSettings: function () {
+                    let self = this;
+                    let request = new XMLHttpRequest();
+                    request.addEventListener("load", function (ev) {
+                        if (ev.currentTarget.status == 200) {
+                            var settingsStr = ev.currentTarget.responseText;
+                            var settings = JSON.parse(settingsStr);
+                            self.default_pool = settings["default_pool"];
+                            self.default_retSize = settings["default_retSize"];
+                            self.max_pool = settings["max_pool"];
+                            self.max_retSize = settings["max_retSize"];
+                            var merged = settings["merged"];
+                            if (merged === true) {
+                                self.merged = "Merged";
+                            } else {
+                                self.merged = "Not Merged";
+                            }
+                            var sources = settings["sources"];
+                            var strSources = sources.split(",");
+                            var sourceFormatted = [];
+                            for (var i = 0; i < strSources.length; i++) {
+                                if (strSources[i] == "es") {
+                                    sourceFormatted.push("Elastic Search Index");
+                                } else if (strSources[i] == "cui") {
+                                    sourceFormatted.push("CUI2Vec");
+                                }
+                            }
+                            self.sources = sourceFormatted.toString();
+                        }
+                    });
+                    //TODO: Change the url below to the actual address if deployed in production
+                    request.open("GET", "http://localhost:6688/settings");
+                    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    request.send(null);
+                },
                 reset: function () {
                     let self = this;
                     self.word = "";
@@ -182,15 +244,24 @@
                             return
                         }
                         let request = new XMLHttpRequest();
-                        request.addEventListener("load", function(ev) {
+                        request.addEventListener("load", function (ev) {
                             el.classList.remove("loading");
                             let wordSuggestions = [];
                             if (ev.currentTarget.status == 200) {
                                 var doc = ev.currentTarget.responseText;
                                 resp = JSON.parse(doc);
                                 if (resp.hasOwnProperty("ES") || resp.hasOwnProperty("CUI")) {
-                                    wordsFromES = resp["ES"];
-                                    wordsFromCUI = resp["CUI"];
+                                    if (resp["CUI"] != undefined) {
+                                        wordsFromCUI = resp["CUI"];
+                                    } else {
+                                        wordsFromCUI = [];
+                                    }
+
+                                    if (resp["ES"] != undefined) {
+                                        wordsFromES = resp["ES"];
+                                    } else {
+                                        wordsFromES = [];
+                                    }
                                 } else {
                                     wordSuggestions = resp;
                                     wordsFromCUI = [];
@@ -205,18 +276,25 @@
                             self.wordsFromCUI = wordsFromCUI;
                             self.wordsFromES = wordsFromES;
                             self.searchEnd = new Date().getTime();
-                            self.timeSpend = (self.searchEnd - self.searchStart)/1000;
+                            self.timeSpend = (self.searchEnd - self.searchStart) / 1000;
                             self.init = true;
                             self.ready = true;
                             self.busy = false;
                         });
-                        request.open("GET", "http://localhost:6688/search?" + "retSize=" + self.size + "&pool=" + self.pool + "&sources=" + self.sources + "&merged=" + self.merged + "&term=" + self.word);
+                        //TODO: Change the url below to the actual address if deployed in production
+                        request.open("GET", "http://localhost:6688/search?" + "retSize=" + self.size +
+                            "&pool=" + self.pool + "&sources=" + self.sources + "&merged=" + self
+                            .merged + "&term=" + self.word);
                         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                         request.send(null);
                     }
                 }
+            },
+            beforeMount: function () {
+                this.getSettings();
             }
         })
     </script>
 </body>
+
 </html>
