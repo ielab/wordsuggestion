@@ -181,15 +181,16 @@
                                 self.merged = "Not Merged";
                             }
                             var sources = settings["sources"];
-                            var strSources = [];
-                            for (s in sources) {
-                                if (s === "es") {
-                                    strSources.append("Elastic Search Index");
-                                } else if (s === "cui") {
-                                    strSources.append("CUI2Vec");
+                            var strSources = sources.split(",");
+                            var sourceFormatted = [];
+                            for (var i = 0; i < strSources.length; i++) {
+                                if (strSources[i] == "es") {
+                                    sourceFormatted.push("Elastic Search Index");
+                                } else if (strSources[i] == "cui") {
+                                    sourceFormatted.push("CUI2Vec");
                                 }
                             }
-                            self.sources = strSources.toString();
+                            self.sources = sourceFormatted.toString();
                         }
                     });
                     //TODO: Change the url below to the actual address if deployed in production
