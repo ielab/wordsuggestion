@@ -26,10 +26,10 @@ func (WordSuggestionPlugin) PermissionType() searchrefiner.PluginPermission {
 
 func (WordSuggestionPlugin) Details() searchrefiner.PluginDetails {
 	return searchrefiner.PluginDetails{
-		Title:       "Word Suggestions",
-		Description: "Give alternative word suggestions based on the input word.",
+		Title:       "KeywordSuggest",
+		Description: "Provide query suggestions for a search.",
 		Author:      "ielab",
-		Version:     "3.Dec.2019",
+		Version:     "23.Jan.2020",
 		ProjectURL:  "ielab.io/searchrefiner",
 	}
 }
