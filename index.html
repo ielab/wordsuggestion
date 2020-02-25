@@ -194,7 +194,7 @@
                         }
                     });
                     //TODO: Change the url below to the actual address if deployed in production
-                    request.open("GET", "http://localhost:6688/settings");
+                    request.open("GET", "https://ielab-sysrev2.uqcloud.net/suggest/settings");
                     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                     request.send(null);
                 },
@@ -282,7 +282,7 @@
                             self.busy = false;
                         });
                         //TODO: Change the url below to the actual address if deployed in production
-                        request.open("GET", "http://localhost:6688/search?" + "retSize=" + self.size +
+                        request.open("GET", "https://ielab-sysrev2.uqcloud.net/suggest/search?" + "retSize=" + self.size +
                             "&pool=" + self.pool + "&sources=" + self.sources + "&merged=" + self
                             .merged + "&term=" + self.word);
                         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
