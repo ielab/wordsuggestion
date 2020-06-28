@@ -141,7 +141,7 @@
                 word: "",
                 size: null,
                 pool: null,
-                merged: true,
+                merged: false,
                 sources: null,
 
                 wordSuggestions: [],
@@ -155,12 +155,11 @@
                 searchEnd: 0,
                 timeSpend: 0,
 
-                max_pool: null,
-                max_retSize: null,
-                default_pool: null,
-                default_retSize: null,
-                merged: null,
-                sources: null,
+                max_pool: 20,
+                max_retSize: 10,
+                default_pool: 5,
+                default_retSize: 5,
+                sources: "cui,es",
             },
             methods: {
                 getSettings: function () {
@@ -193,8 +192,7 @@
                             self.sources = sourceFormatted.toString();
                         }
                     });
-                    //TODO: Change the url below to the actual address if deployed in production
-                    request.open("GET", "http://localhost:6688/settings");
+                    request.open("GET", "/api/suggestorSettings");
                     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                     request.send(null);
                 },
@@ -249,6 +247,7 @@
                             let wordSuggestions = [];
                             if (ev.currentTarget.status == 200) {
                                 var doc = ev.currentTarget.responseText;
+                                console.log(doc)
                                 resp = JSON.parse(doc);
                                 if (resp.hasOwnProperty("ES") || resp.hasOwnProperty("CUI")) {
                                     if (resp["CUI"] != undefined) {
@@ -281,12 +280,9 @@
                             self.ready = true;
                             self.busy = false;
                         });
-                        //TODO: Change the url below to the actual address if deployed in production
-                        request.open("GET", "http://localhost:6688/search?" + "retSize=" + self.size +
-                            "&pool=" + self.pool + "&sources=" + self.sources + "&merged=" + self
-                            .merged + "&term=" + self.word);
+                        request.open("POST", "/api/keywordSuggestor");
                         request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                        request.send(null);
+                        request.send("retSize=" + self.size + "&pool=" + self.pool + "&sources=" + self.sources + "&merged=" + self.merged + "&term=" + self.word);
                     }
                 }
             },
