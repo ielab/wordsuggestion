@@ -41,37 +41,26 @@
         {{template "sidebar"}}
     </header>
     <div class="panel p-2 mt-2" style="overflow:hidden;margin: auto;max-width: 80%">
-        <h2>Word Suggestion</h2>
-        <div class="divider"></div>
         <div class="panel-body container">
-            <ul style="list-style-type: none;">
-                <p v-if="!init">Use the search box above to input your term. Click the back link in the top left corner
-                    of the interface to return to the main page.</p>
-                <li><span class="span-rg"><strong>Search terms: </strong></span></li>
-                <li><input class="panel-body" style="overflow:hidden;width:40%" v-model="word" id="termInputBox" v-on:keyup="loadTerms"></li>
-            </ul>
+            <h2>Keyword Suggestion</h2>
+            <p>Enter a term or phrase into the search box below, click "search", and related terms and phrases will appear below as suggestions.</p>
+            <div class="input-group">
+                <input class="form-input" style="overflow:hidden;width:40%" v-model="word" id="termInputBox" v-on:keyup="loadTerms">
+                <button class="btn btn-primary input-group-btn" id="btn-update-tree" v-on:click="loadTerms()">
+                    <i class="icon icon-forward"></i> Search
+                </button>
+            </div>
         </div>
         <div class="panel-footer">
-            <button class="btn btn-primary" id="btn-update-tree" v-on:click="loadTerms()">
-                <i class="icon icon-forward"></i> Search
-            </button>
-            <div class="divider"></div>
 
             <div v-if="busy && !ready" class="loading loading-lg"></div>
             <div class="text-left text-sm text-gray">
-                    <span class="span-sm" v-if="init && merged" style="font-size:100%"><strong>[[ wordSuggestions.length
-                            ]]</strong> Alternatives Found</span></br>
-                <span class="span-sm" v-if="init && !merged" style="font-size:100%"><strong>[[ wordsFromES.length +
-                            wordsFromCUI.length ]]</strong> Alternatives Found</span></br>
-                <span class="span-sm" v-if="init" style="font-size:100%">In <strong>[[ timeSpend ]]</strong>
-                        seconds</span>
+                <span class="span-sm" v-if="init && merged" style="font-size:100%"><strong>[[ wordSuggestions.length]]</strong> suggestions found</span>
+                <span class="span-sm" v-if="init && !merged" style="font-size:100%"><strong>[[ wordsFromES.length + wordsFromCUI.length ]]</strong> suggestions found</span>
+                <span class="span-sm" v-if="init" style="font-size:100%">In <strong>[[ timeSpend ]]</strong>seconds</span>
             </div>
             <div class="divider"></div>
             <div v-if="init && merged"></br>
-                <div style="text-align: center;">
-                    <h5>Alternative Words Found</h5>
-                </div>
-                <div class="divider"></div>
                 <ol>
                     <li v-if="init && merged" v-for="item in wordSuggestions" class="pb-2">
                         <span> [[ item.term ]]</span></br>
