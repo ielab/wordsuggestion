@@ -10,6 +10,8 @@ import (
 type WordSuggestionPlugin struct {
 }
 
+func (WordSuggestionPlugin) Startup(s searchrefiner.Server) {}
+
 func (WordSuggestionPlugin) Serve(s searchrefiner.Server, c *gin.Context) {
 	rawQuery := c.PostForm("query")
 	lang := c.PostForm("lang")
